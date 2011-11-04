@@ -1,0 +1,6 @@
+name = Complaint
+description = Complaint
+core = 7.x
+files[] = complaint.install
+files[] = complaint.module
+files[] = complaint.entity.class

@@ -1,0 +1,16 @@
+<?php
+function mvc_schema() {
+  $cache = drupal_get_schema('cache');
+  $schema['cache_controller'] = $cache;
+  $schema['cache_controller']['module'] = 'mvc';
+  $schema['cache_controller']['name'] = 'cache';
+  return $schema;
+}
+
+function mvc_install() {
+  drupal_install_schema('mvc');
+}
+
+function mvc_uninstall() {
+  drupal_uninstall_schema('mvc');
+}

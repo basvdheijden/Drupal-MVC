@@ -1,0 +1,4 @@
+name = Klacht Test
+description = klacht test
+core = 7.x
+files[] = klacht.inc

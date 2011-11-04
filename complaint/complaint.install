@@ -1,0 +1,31 @@
+<?php
+function complaint_entity_info(){
+  return array(
+    'entity_complaint' => array(
+      'label' => t('Complaint'),
+      'entity class' => 'Entity',
+      'controller class' => 'EntityAPIController',
+      'base table' => 'cb_complaint',
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'label callback' => 'entity_class_label',
+      'uri callback' => 'entity_class_urii'
+    ),
+  );
+}
+
+function complaint_schema(){
+  $schema['complaint'] = array(
+      'description' => 'Entity ',
+      'fields' => array(
+          'id' => array(
+              'description' => 'TODO: please describe this field!',
+              'type' => 'serial',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+          ),
+      ),
+      'primary key' => array('id'),
+  );
+}

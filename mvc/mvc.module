@@ -1,0 +1,473 @@
+<?php
+
+/**
+ * Different caching options
+ */
+define('CONTROLLER_CACHE_GLOBAL', 1);
+define('CONTROLLER_CACHE_PER_USER', 2);
+define('CONTROLLER_CACHE_PATH', 3);
+
+/**
+ * Default cache bin
+ */
+define('CONTROLLER_CACHE_BIN', 'cache_controller');
+
+/**
+ *
+ * @global object $user
+ * @param string $cacheString
+ * @param string $controllerName
+ * @param string $methodName
+ * @return array CacheId (Cid)
+ */
+function mvc_cache_get_id($cacheString, $controllerName, $methodName) {
+  global $user;
+
+  if (!strpos($cacheString, ':')) {
+    return FALSE;
+  }
+  $cache = explode(':', substr($cacheString, 6));
+  $type = constant($cache[0]);
+  if (!$type) {
+    return FALSE;
+  }
+  $expire = (int) $cache[1];
+
+
+  switch($type) {
+    case CONTROLLER_CACHE_PER_USER:
+      $cacheType = 'user:'.$user->uid.':';
+      break;
+    case CONTROLLER_CACHE_GLOBAL:
+      $cacheType = 'global:';
+      break;
+    case CONTROLLER_CACHE_PATH:
+      $cacheType = 'path:'.$_GET['q'].':';
+      break;
+  }
+  $cacheId = 'controllercache:'.$cacheType.strtolower($controllerName).':'.strtolower($methodName);
+
+  return array(
+    'id' => $cacheId,
+    'expire' => time() + $expire,
+  );
+}
+
+/**
+ * Returns the data of a specific cid (see: mvc_cache_get_id)
+ * @param array $mvcCache
+ * @return string $data
+ */
+function mvc_cache_get($mvcCache) {
+  if ($cache = cache_get($mvcCache['id'], CONTROLLER_CACHE_BIN)) {
+    if ($cache->expire < time()) {
+      drupal_set_message('Controller-Cache refresh! ('.$mvcCache['id'].')');
+      return FALSE;
+    }
+
+    drupal_set_message('Controller-Cache get! ('.$mvcCache['id'].')');
+
+    return $cache->data;
+  }
+  
+  return FALSE;
+}
+
+/**
+ * Set the cache
+ * @param array $cacheId constructed with mvc_cache_get_id
+ * @param object|string $data Data to store
+ * @return void
+ */
+function mvc_cache_set($cache, $data = FALSE) {
+  if (!$data) return FALSE;
+
+  cache_set($cache['id'], $data, CONTROLLER_CACHE_BIN, $cache['expire']);
+  drupal_set_message('Controller-Cache set! ('.$cache['id'].')');
+}
+
+/**
+ * Clears the controller cache
+ * @param string $cids Optional: clear a specific cid
+ * @return void
+ */
+function mvc_cache_clear($cids = NULL) {
+  return cache_clear_all($cids, CONTROLLER_CACHE_BIN);
+}
+
+/**
+ *
+ * @param array $form
+ * @param array $form_state
+ * @param array $formArray the form array to be rendered
+ * @param string $controllerName the controller to use
+ * @param string $methodName the form method
+ * @return array
+ */
+function mvc_get_forms($form, &$form_state, $formArray, $controllerName, $methodName) {
+  $form_state['controllerName'] = $controllerName;
+  $form_state['methodName'] = $methodName;
+
+  return $formArray;
+}
+/**
+ *
+ * @param array $form
+ * @param array $form_state
+ * @return void the result of the validate function
+ */
+function mvc_get_forms_validate($form, &$form_state) {
+  $controllerName = $form_state['controllerName'];
+  $methodName = $form_state['methodName'].'Validate';
+
+  if (isset($controllerName) and isset($methodName) and method_exists($controllerName, $methodName)) {
+    $controller = new $controllerName();
+    return $controller->$methodName($form_state['values']);
+  }
+}
+/**
+ *
+ * @param array $form
+ * @param array $form_state
+ * @return void the result of the submit function
+ */
+function mvc_get_forms_submit($form, &$form_state) {
+  $controllerName = $form_state['controllerName'];
+  $methodName = $form_state['methodName'].'Submit';
+  
+  if (isset($controllerName) and isset($methodName) and method_exists($controllerName, $methodName)) {
+    $controller = new $controllerName();
+    return $controller->$methodName($form_state['values']);
+  }
+}
+
+/**
+ *
+ * @param string $path to check, or $_GET['q] by default
+ * @return bool|string the requested format or false if undefined
+ */
+function mvc_get_format($path = FALSE) {
+  if (!$path) $path = $_GET['q'];
+
+  $formats = array(
+    'xml', 'json', 'html',
+  );
+
+  if (preg_match('/.+\.(.{2,5})$/', $path, $matches)) {
+    if (in_array(strtolower($matches[1]), $formats)) {
+      return $matches[1];
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Get the correct value for a property name of a menu item
+ * @param array $item the menu item (as reference)
+ * @param string $propertyName the propertyName to check
+ * @param string the $value of the property
+ * @return boolean whether the property is a valid menu item property
+ */
+function mvc_menu_get_property(&$item, $propertyName, $value) {
+  $propertyName = strtolower($propertyName);
+  $propertyFound = TRUE;
+  
+  switch($propertyName) {
+    case 'type':
+      $value = constant($value);
+      break;
+    case 'access arguments':
+      $value = array($value);
+      break;
+    case 'title':
+      $value = $value;
+      break;
+    default:
+      $propertyFound = FALSE;
+      break;
+  }
+  
+  if ($propertyFound) {
+    $item[$propertyName] = $value;
+  }
+  
+  return $propertyFound;
+}
+
+/**
+ * Get all actions for a certain controller
+ * @param string $controllerName the name of the controller
+ * @param boolean $showPrefix whether to return the prefix of the controller
+ * @return array All the routing actions for a certain controller
+ */
+function mvc_menu_get_actions($controllerName, $showPrefix = TRUE) {
+  $prefix = '';
+  if ($showPrefix) {
+    $mainController = new $controllerName();
+    $prefix = (isset($mainController->prefix)) ? ucfirst($mainController->prefix) . '_' : '';
+  }
+  
+  $reflectionClass = new ReflectionClass($controllerName);
+  $paths = array();
+  foreach($reflectionClass->getMethods() as $method) {
+    if (preg_match('/^(.+)Action$/', $method->name, $matches)) {
+      $paths[] = $prefix . $matches[1];
+    }
+  }
+  
+  return $paths;
+}
+
+/**
+ * Return the method meta attributes of a certain controller
+ * @param string $controllerName the name of the controller
+ * @param string $methodName the name of the method
+ * @return array $items the filtered attributes
+ */
+function mvc_get_method_attributes($controllerName, $methodName) {
+  $reflectionMethod = new ReflectionMethod($controllerName, $methodName);
+  $docComment = $reflectionMethod->getDocComment();
+  if (!$docComment) return false;
+  
+  preg_match_all('/@(.+):\s+?(.+)/', $docComment, $methodAttributes);
+  if (count($methodAttributes) < 2) return false;
+  
+  $attributes = array();
+  $itemValues = $methodAttributes[2];
+  
+  $items = array();
+  foreach($methodAttributes[1] as $k=>$v) {
+    $items[$v] = $itemValues[$k];
+  }
+
+  // Get theme attribute
+  $items['theme'] = (bool) preg_match('/@Themed/', $docComment);
+  $items['form'] = (bool) preg_match('/@Form/', $docComment);
+  
+  return $items;
+}
+
+/**
+ * Get all menu instances of a certain controller in a Drupal formatted menu array
+ * @param string $controllerName the name of a certain controller
+ * @return array $items the menu items for use in hook_menu
+ */
+function mvc_menu_get_items($controllerName) {
+  $mainController = new $controllerName();
+  $prefix = (isset($mainController->prefix)) ? $mainController->prefix.'/' : '';
+  
+  $items = array();
+  foreach(mvc_menu_get_actions($controllerName, $showPrefix = FALSE) as $method) {
+    $path = explode('_', $method);
+    $local_prefix = $prefix;
+    
+    if (count($path) === 1 and $path[0] === 'Index') {
+      $path = array('');
+      $local_prefix = substr($prefix, 0, strlen($prefix)-1);
+    }
+    
+    $item = array();
+    $attributes = mvc_get_method_attributes($mainController, $method.'Action');
+    foreach($attributes as $k=>$v) {
+      mvc_menu_get_property($item, $k, $v);
+    }
+    
+    $item['page callback'] = 'mvc_return_page';
+    $item['page arguments'] = array($controllerName, $method.'Action');
+
+    if ($attributes['form']) {
+      $item['page arguments'][] = 'form';
+    }
+    
+    if ($attributes['theme']) {
+      $item['page arguments'][] = 'theme';
+    }
+
+    if (isset($attributes['Format'])) {
+      $item['page arguments'][] = 'format:'.$attributes['Format'];
+    }
+    
+    if (isset($attributes['Cache'])) {
+      $item['page arguments'][] = 'cache:'.$attributes['Cache'];
+    }
+
+    $reflectionMethod = new ReflectionMethod($controllerName, $method.'Action');
+    
+    for($i=0; $i < $reflectionMethod->getNumberOfParameters(); $i++) {
+      $path[] = '%';
+      $item['page arguments'][] = count($path);
+    }
+    
+    $fullPath = $local_prefix . strtolower(implode('/', $path));
+    $items[$fullPath] = $item;
+  }
+  
+  return $items;
+}
+
+/**
+ * Return a page through the MVC routing system
+ * @return array|string Renderable array or string for page output
+ */
+function mvc_return_page() {
+  $arguments = func_get_args();
+  $controllerName = array_shift($arguments);
+  $controller = new $controllerName();
+  $methodName = array_shift($arguments);
+  $theme = FALSE;
+  $cacheId = FALSE;
+
+  if (isset($arguments[0]) and $arguments[0] === 'form') {
+    array_shift($arguments);
+
+    $form = $controller->$methodName();
+    $form_id = "mvc_{$controllerName}_{$methodName}_form";
+
+    return drupal_get_form($form_id, $form, $controllerName, $methodName);
+  }
+
+  if (isset($arguments[0]) and $arguments[0] === 'theme') {
+    array_shift($arguments);
+    $strippedMethodName = str_replace('Action', '', $methodName);
+    $theme = "{$controllerName}_{$strippedMethodName}";
+  }
+
+  if (isset($arguments[0]) and substr($arguments[0], 0, 6) === 'format') {
+    $currentFormat = mvc_get_format();
+    $possibleFormats = explode('|', substr(array_shift($arguments), 7));
+
+    if ($currentFormat) {
+      $arg = &$arguments[count($arguments)-1];
+      $arg = str_replace('.'.$currentFormat, '', $arg);
+    }
+
+    if (!$currentFormat or !in_array($currentFormat, $possibleFormats)) {
+      $currentFormat = $possibleFormats[0];
+    }
+  }
+
+  if (isset($arguments[0]) and substr($arguments[0], 0, 5) === 'cache') {
+    $cache = array_shift($arguments);
+    $cacheId = mvc_cache_get_id($cache, $controllerName, $methodName, $arguments);
+    if ($cachedPage = mvc_cache_get($cacheId)) {
+      return $cachedPage;
+    }
+  }
+
+  $build = call_user_func_array(array($controller, $methodName), $arguments);
+
+  if (isset($currentFormat)) {
+    print $controller->format($currentFormat, $build);
+    exit;
+  }
+
+  if ($theme) {
+    // Render a different theme
+    if (is_array($build) and isset($build['theme'])) {
+      $theme = $build['theme'];
+    }
+    $build = theme($theme, array('view' => $build));
+  }
+
+  if ($cacheId) {
+    mvc_cache_set($cacheId, $build);
+  }
+  
+  return $build;
+}
+
+/* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ 
+/* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ 
+/* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ 
+/* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */ /* HOOKS */
+
+/**
+ * Implementation of hook_forms
+ * @param string $form_id
+ * @param array $args
+ * @return array $forms
+ */
+function mvc_forms($form_id, $args) {
+  if (preg_match('/^mvc_/', $form_id)) {
+    $forms[$form_id] = array(
+      'callback' => 'mvc_get_forms',
+    );
+
+    return $forms;
+  }
+}
+
+/**
+ * Implementation of hook_flush_caches
+ * @return array the bins to flush
+ */
+function mvc_flush_caches() {
+  return array(CONTROLLER_CACHE_BIN);
+}
+
+/**
+ * Implementation of hook_menu
+ * @return array $items the menu items
+ */
+function mvc_menu() {
+  $items = array();
+  try{
+  foreach(module_invoke_all('mvc') as $controller) {
+    $items = array_merge($items, mvc_menu_get_items($controller));
+  }
+
+  $items['admin/mvc/clear'] = array(
+    'page callback' => 'mvc_cache_clear',
+    'title' => 'Clear MVC Caches',
+    'access arguments' => array('flush caches'),
+    'type' => MENU_CALLBACK,
+  );
+  }catch(MCVException $e){
+    //Throw new Exception 
+    /* @var $e Exception */
+    watchdog_exception('MVC_MODULE', $e,$e->getMessage().$e->getTraceAsString());
+  }
+  return $items;
+}
+
+/**
+ * Implementation of hook_theme
+ * @param array $existing
+ * @param string $type
+ * @param string $theme
+ * @param string $path
+ * @return array theme implementations
+ */
+function mvc_theme($existing, $type, $theme, $path) {
+  $theme = array();
+  foreach(module_implements('mvc') as $module) {
+    $path = drupal_get_path('module', $module).'/templates';
+    
+    $controllers = module_invoke($module, 'mvc');
+    foreach($controllers as $controller) {
+      foreach(mvc_menu_get_actions($controller, $showPrefix = FALSE) as $method) {
+        $attributes = mvc_get_method_attributes($controller, $method.'Action');
+        if (!$attributes['theme']) continue;
+        
+        $file = strtolower("{$controller}_{$method}");
+        $fullPath = $path . '/' . $file . '.tpl.php';
+        
+        if (!file_exists($fullPath)) {
+          drupal_set_message("Could not find @Theme implementation for Controller: {$controller} and Method {$method} (location: $fullPath)", 'error');
+          continue;
+        }
+        
+        $theme["{$controller}_{$method}"] = array(
+          'path' => $path,
+          'template' => $file,
+          'variables' => array(
+            'view' => NULL,
+          ),
+        );
+      }
+    }
+  }
+  
+  return $theme;
+}

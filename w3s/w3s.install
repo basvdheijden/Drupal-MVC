@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * TODO: Enter file description here.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function w3s_requirements($phase) {
+  
+}
+
+/**
+ * Implements hook_schema().
+ */
+function w3s_schema() {
+  
+}
+
+/**
+ * Implements hook_install().
+ */
+function w3s_install() {
+  
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function w3s_uninstall() {
+  
+}
+
+/**
+ * Implements hook_enable().
+ */
+function w3s_enable() {
+  
+}
+
+/**
+ * Implements hook_disable().
+ */
+function w3s_disable() {
+  
+}
+

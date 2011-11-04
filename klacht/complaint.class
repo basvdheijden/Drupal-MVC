@@ -1,0 +1,9 @@
+<?php
+class Complaint extends Project_Entity_Base{
+  
+  /**
+   * Entity Bundle type
+   * @var string 
+   */
+  protected $_bundle = 'page';
+}
