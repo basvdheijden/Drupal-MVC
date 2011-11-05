@@ -1,7 +1,7 @@
 <?php
-
-function complaint_from($from, $from_state){
-  $from = array();
+function complaint_from($from, &$form_state){
+  $form = array();
+  
   $form['element_1'] = array(
       '#type' => 'textfield',
       '#title' => 'iets',
@@ -9,8 +9,11 @@ function complaint_from($from, $from_state){
   );
 
   $form['submit'] = array(
-      "#value" => 'Verstuur',
+      '#value' => 'Verstuur',
       '#type' => 'submit'
   );
+  
   return $form;
 }
+
+
