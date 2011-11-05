@@ -413,18 +413,17 @@ function mvc_flush_caches() {
 function mvc_menu() {
   $items = array();
   try{
-  foreach(module_invoke_all('mvc') as $controller) {
-    $items = array_merge($items, mvc_menu_get_items($controller));
-  }
+    foreach(module_invoke_all('mvc') as $controller) {
+      $items = array_merge($items, mvc_menu_get_items($controller));
+    }
 
-  $items['admin/mvc/clear'] = array(
-    'page callback' => 'mvc_cache_clear',
-    'title' => 'Clear MVC Caches',
-    'access arguments' => array('flush caches'),
-    'type' => MENU_CALLBACK,
-  );
-  }catch(MCVException $e){
-    //Throw new Exception 
+    $items['admin/mvc/clear'] = array(
+      'page callback' => 'mvc_cache_clear',
+      'title' => 'Clear MVC Caches',
+      'access arguments' => array('flush caches'),
+      'type' => MENU_CALLBACK,
+    );
+  } catch(MCVException $e) {
     /* @var $e Exception */
     watchdog_exception('MVC_MODULE', $e,$e->getMessage().$e->getTraceAsString());
   }
