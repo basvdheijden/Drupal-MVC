@@ -37,6 +37,26 @@ class Controller {
     drupal_set_message($message, $type);
   }
   
+  /**
+   * Return a specific status code
+   * @Todo: Needs to be expanded
+   */
+  protected function statusCode($status) {
+    switch($status) {
+      case 404:
+        $return = drupal_not_found();
+        break;
+      case 403:
+        $return = drupal_access_denied();
+        break;
+      case 500:
+        $return = drupal_site_offline();
+        break;
+    }
+    
+    return $return;
+  }
+  
   /** 
    * Alias of drupal_goto
    * @param string $url
