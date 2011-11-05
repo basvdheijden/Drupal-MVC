@@ -1,5 +1,5 @@
 <?php
-function complaint_from($from, &$form_state){
+function complaint_form($from, &$form_state){
   $form = array();
   
   $form['element_1'] = array(
@@ -9,7 +9,7 @@ function complaint_from($from, &$form_state){
   );
 
   $form['submit'] = array(
-      '#value' => 'Verstuur',
+      #value' => 'Verstuur',
       '#type' => 'submit'
   );
   

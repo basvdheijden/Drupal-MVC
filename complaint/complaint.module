@@ -1,13 +1,12 @@
 <?php
-
 function complaint_menu(){
   $items = array();
   $items['kip/new'] = array(
-    'title' => 'Test',
-    'page arguments' => array('complaint_from'),
+    'title' => t('Test'),
+    'page arguments' => array('complaint_form'),
     'file' => 'kip-form.inc',
     'page callback' => 'drupal_get_form',
-    'access arguments' => array('access booking'),
+    'access arguments' => array('access content'),
   );
   return $items;
 }
