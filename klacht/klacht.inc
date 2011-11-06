@@ -105,6 +105,11 @@ class Klacht extends Controller {
   * @Cache: CONTROLLER_CACHE_PER_USER:86400
   */
   public function IndexAction() {
+    
+    $this->entityComplaint->load(1);
+    var_dump($this->entityComplaint->title->value());
+    die;
+    
     global $user;
     return "Homepage voor klachten voor gebruiker: " . ( isset($user->name) ? $user->name : 'Anonieme gebruiker' );
   }
