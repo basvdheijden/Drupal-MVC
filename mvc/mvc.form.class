@@ -1,0 +1,53 @@
+<?php
+class Form {
+  public $formData;
+  public $form;
+  
+  public function __construct() {
+    $this->form = array();
+  }
+  
+  /**
+   * Populate the form with data
+   * @param array $formData
+   * @return Form_Complaint 
+   */
+  public function populate($formData = array()) {
+    return $this;
+  }
+  
+/**
+ * Return a drupal form array
+ * @param array $fields
+ * @return array 
+ */
+  public function addFields($fields = array()) {
+    $this->form = array_merge($this->form, $fields);
+    return $this;
+  }
+  
+  public function render($fields = array()) {
+    if (is_string($fields)) {
+      $fields = array($fields);
+    }
+    
+    foreach($this->form as $k=>$v) {
+      if (count($fields) and !isset($fields[$k])) {
+        continue;
+      }
+      
+      drupal_render($this->form[$k]);
+    }
+    
+    return $this;
+  }
+
+
+  public function validate(&$post) {
+    
+  }
+  
+  public function __toString() {
+    drupal_render_children($this->form);
+  }
+}
