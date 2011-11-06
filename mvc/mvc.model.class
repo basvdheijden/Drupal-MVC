@@ -52,6 +52,8 @@ class Model {
   public function load($id){
     /* Get entity information */
     if ($this->_entityId === self::NEW_INSTANCE) return $this->load($this->create());
+    
+    $this->_entityId = $id;
     $this->_entity = entity_metadata_wrapper($this->_entityType,$this->_entityId);
     
     if (!$id) throw new InvalidArgumentException('No Id is given for entity');

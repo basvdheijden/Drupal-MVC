@@ -7,13 +7,13 @@ class Klacht extends Controller {
   
   /**
    *
-   * @var Complaint 
+   * @var Complaint
    */
-  public $entityComplaint;
+  public $Complaint;
   
   public function __construct() {
     module_load_include('class', 'klacht','complaint');
-    $this->entityComplaint = new Complaint();
+    $this->Complaint = new Complaint();
   }
   
   /**
@@ -25,11 +25,11 @@ class Klacht extends Controller {
   public function Post_KlachtAction($id = Controller::NEW_INSTANCE, $name) {
     $transaction = db_transaction();
     try{
-    $this->entityComplaint->load($id);
+    $this->Complaint->load($id);
     $return = '';
-    if($this->entityComplaint->save()){
-      $this->entityComplaint->title->set($name);
-      $return = "Je hebt klacht {$this->entityComplaint->title->value()} met id {$id} opgeslagen als {$name}.";
+    if($this->Complaint->save()){
+      $this->Complaint->title->set($name);
+      $return = "Je hebt klacht {$this->Complaint->title->value()} met id {$id} opgeslagen als {$name}.";
     }
     }  catch (Exception $e){
       $transaction->rollback();
@@ -80,10 +80,10 @@ class Klacht extends Controller {
     $transaction = db_transaction();
     try {
       $this->message(print_r($post,true));
-      $this->entityComplaint->create();
-      $this->entityComplaint->title->set($post['title']);
-      $this->entityComplaint->body->set($post['body']);
-      if (!$this->entityComplaint->save()) {
+      $this->Complaint->create();
+      $this->Complaint->title->set($post['title']);
+      $this->Complaint->body->set($post['body']);
+      if (!$this->Complaint->save()) {
         $this->message('Klacht niet opgeslagen');
         return;
       }
@@ -105,11 +105,6 @@ class Klacht extends Controller {
   * @Cache: CONTROLLER_CACHE_PER_USER:86400
   */
   public function IndexAction() {
-    
-    $this->entityComplaint->load(1);
-    var_dump($this->entityComplaint->title->value());
-    die;
-    
     global $user;
     return "Homepage voor klachten voor gebruiker: " . ( isset($user->name) ? $user->name : 'Anonieme gebruiker' );
   }
