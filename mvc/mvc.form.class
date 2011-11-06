@@ -1,14 +1,12 @@
 <?php
 class Form {
   protected $data;
-  protected $fields;
+  protected $fields = array();
   
   protected $posted = FALSE;
   protected $validated;
   
   public function __construct($post = array()) {
-    $this->fields = array();
-    
     $this->addFields(array('form_class' => array(
       '#type' => 'hidden',
       '#value' => __CLASS__,
@@ -29,47 +27,6 @@ class Form {
     return $this->fields;
   }
   
-  public function render($fields = array()) {
-    if (is_string($fields)) {
-      $fields = array($fields);
-    }
-    
-    foreach($this->fields as $k=>$v) {
-      if (count($fields) and !isset($fields[$k])) {
-        continue;
-      }
-      
-      drupal_render($this->fields[$k]);
-    }
-    
-    return $this;
-  }
-
-  public function validate() {
-    if (!$this->data) {
-      throw new Exception('No post data given for form: '.__CLASS__);
-    }
-    
-    $this->validated = TRUE;
-    
-    if (strlen($this->data['title']) > 2) {
-      $this->setError('title', 'Uw titel mag maximaal 2 karakters bevatten. Weinig he?');
-    }
-  }
-  
-  public function submit() {
-    $this->Complaint = new Complaint();
-    $this->Complaint->load(Model::NEW_INSTANCE);
-
-    $this->Complaint->title->set($this->data['title']);
-    $this->Complaint->body->value->set($this->data['body']);
-    
-    $this->Complaint->save();
-    
-    drupal_set_message('Bedankt voor het posten!');
-    drupal_goto($this->Complaint->getUri());
-  }
-  
   public function isPosted() {
     return $this->posted;
   }
@@ -77,12 +34,10 @@ class Form {
   public function isValid() {
     if (!$this->validated) $this->validate();
     return $this->validated;
-  }
-  
-  public function __toString() {
-    drupal_render_children($this->fields);
-  }
-  
+  }  
+
+  public function validate() {  }
+  public function submit() {  }
   /**
    * OOP Alias of form_set_error
    * @param string $field The field to set the error on

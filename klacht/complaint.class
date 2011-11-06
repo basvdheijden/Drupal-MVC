@@ -1,9 +1,91 @@
 <?php
-class Complaint extends Model {
+class Complaint extends Controller {
+  /*
+   * Override prefix
+   */
+  public $prefix = 'klacht';
   
   /**
-   * Entity Bundle type
-   * @var string 
+   *
+   * @var Complaint
    */
-  protected $_bundle = 'page';
+  public $Complaint;
+  public $theme = __CLASS__;
+  
+  public function __construct() {
+    module_load_include('class', 'klacht','complaint');
+    $this->Complaint = new ComplaintModel();
+  }
+  
+  /**
+  * @Type: MENU_NORMAL_ITEM
+  * @Access arguments: access content
+  * @Title: Post a Klacht
+  * @Themed
+  */
+  public function Post_KlachtAction($id = Controller::NEW_INSTANCE, $name) {
+    $transaction = db_transaction();
+    $return = '';
+    try{
+      $this->Complaint->load($id);
+      $this->Complaint->title->set($name);
+      if($this->Complaint->save()){
+        $return = "Je hebt klacht {$this->Complaint->title->value()} met id {$id} opgeslagen als {$name}.";
+      }
+    } catch (Exception $e){
+      $transaction->rollback();
+      drupal_set_message('Error while saving: '.$e->getMessage());
+    }
+    return $return;
+  }
+
+  /**
+   * @Type: MENU_NORMAL_ITEM
+   * @Access arguments: access content
+   * @Title: Add a new klacht
+   * @Form
+   */
+  public function NewAction() {
+    return new KlachtForm();
+  }
+  
+  /**
+  * @Type: MENU_NORMAL_ITEM
+  * @Access arguments: access content
+  * @Title: Homepage voor klachten
+  * @Cache: CONTROLLER_CACHE_PER_USER:86400
+  */
+  public function IndexAction() {
+    global $user;
+    return "Homepage voor klachten voor gebruiker: " . ( isset($user->name) ? $user->name : 'Anonieme gebruiker' );
+  }
+  
+  /**
+  * @Type: MENU_CALLBACK
+  * @Access arguments: access content
+  * @Title: Get a Klacht
+  * @Cache: CONTROLLER_CACHE_PATH:86400
+  * @Format: json|xml
+  */
+  public function GetAction($id, $name) {
+    $build = array(
+      'data' => 'kip',
+      'id'=> $id,
+      'name'=> $name,
+    );
+
+    return $build;
+  }
+
+  /**
+  * @Type: MENU_LOCAL_TASK
+  * @Access arguments: access content
+  * @Title: Overview Page
+  * @Themed
+  * @Cache: CONTROLLER_CACHE_GLOBAL:10
+  */  
+  public function OverviewAction() {
+    return 'Empty..';
+  }
+
 }

@@ -1,4 +1,8 @@
 <?php
-function klacht_mvc() {
-  return array('Klacht');
+function klacht_mvc_controllers() {
+  return array('Complaint');
+}
+
+function klacht_mvc_blocks() {
+  return array('ComplaintBlocks');
 }

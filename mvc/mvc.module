@@ -233,7 +233,7 @@ function mvc_get_method_attributes($controllerName, $methodName) {
 
   // Get theme attribute
   $items['theme'] = (bool) preg_match('/@Themed/', $docComment);
-  $items['form'] = (bool) preg_match('/@Form/', $docComment);
+  $items['form'] = (bool) preg_match('/@Form\n/', $docComment);
   
   return $items;
 }
@@ -303,6 +303,7 @@ function mvc_menu_get_items($controllerName) {
 function mvc_return_page() {
   $arguments = func_get_args();
   $controllerName = array_shift($arguments);
+  
   $controller = new $controllerName();
   $methodName = array_shift($arguments);
   $theme = FALSE;
@@ -313,8 +314,12 @@ function mvc_return_page() {
 
     $form = $controller->$methodName();
     $form_id = "mvc_{$controllerName}_{$methodName}_form";
+    $method = str_replace('Action', '', $methodName);
+    $theme_id = "{$controllerName}_{$method}";
 
-    return drupal_get_form($form_id, $form);
+    $form = drupal_get_form($form_id, $form);
+    
+    return theme($theme_id, array('form' => $form));
   }
 
   if (isset($arguments[0]) and $arguments[0] === 'theme') {
@@ -430,16 +435,30 @@ function mvc_menu() {
  */
 function mvc_theme($existing, $type, $theme, $path) {
   $theme = array();
-  foreach(module_implements('mvc') as $module) {
+  foreach(module_implements('mvc_controllers') as $module) {
     $path = drupal_get_path('module', $module).'/templates';
     
     $controllers = module_invoke($module, 'mvc');
     foreach($controllers as $controller) {
       foreach(mvc_menu_get_actions($controller, $showPrefix = FALSE) as $method) {
         $attributes = mvc_get_method_attributes($controller, $method.'Action');
-        if (!$attributes['theme']) continue;
+        
+        if (!$attributes['theme'] and !$attributes['form']) continue;
         
         $file = strtolower("{$controller}_{$method}");
+        
+        if ($attributes['form']) {
+          $file .= '.form';
+          $vars = array(
+            'form' => NULL,
+          );
+        }
+        else {
+          $vars = array(
+            'view' => NULL,
+          );
+        }
+        
         $fullPath = $path . '/' . $file . '.tpl.php';
         
         if (!file_exists($fullPath)) {
@@ -450,9 +469,7 @@ function mvc_theme($existing, $type, $theme, $path) {
         $theme["{$controller}_{$method}"] = array(
           'path' => $path,
           'template' => $file,
-          'variables' => array(
-            'view' => NULL,
-          ),
+          'variables' => $vars,
         );
       }
     }

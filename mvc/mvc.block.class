@@ -1,0 +1,18 @@
+<?php
+class Block {
+  public function __construct() {
+    
+  }
+  
+  public function render() {
+    
+  }
+  
+  public function info() {
+    
+  }
+  
+  public function configure() {
+    
+  }
+}

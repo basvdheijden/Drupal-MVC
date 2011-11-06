@@ -16,7 +16,7 @@ class Controller {
 
   
   public function __construct() {
-
+    $this->buildPrefix();
   }
 
   /**

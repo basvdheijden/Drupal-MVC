@@ -1,0 +1,9 @@
+<?php
+class ComplaintModel extends Model {
+  
+  /**
+   * Entity Bundle type
+   * @var string 
+   */
+  protected $_bundle = 'page';
+}

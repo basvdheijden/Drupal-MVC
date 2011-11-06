@@ -1,0 +1,50 @@
+<?php
+class KlachtForm extends Form {
+  public function __construct($post = array()) {
+    $fields = array();
+    
+    $fields['title'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Titel',
+      '#default_value' => '',
+    );
+    $fields['body'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Inhoud',
+    );
+    $fields['submit'] = array(
+      '#type' => 'submit',
+      '#value' => 'Nieuwe klacht indienen',
+    );
+    
+    $this->addFields($fields);
+    
+    parent::__construct($post);
+  }
+  
+  
+  public function validate() {
+    if (!$this->data) {
+      throw new Exception('No post data given for form: '.__CLASS__);
+    }
+    
+    $this->validated = TRUE;
+    
+    if (strlen($this->data['title']) > 2) {
+      $this->setError('title', 'Uw titel mag maximaal 2 karakters bevatten. Weinig he?');
+    }
+  }
+  
+  public function submit() {
+    $this->Complaint = new ComplaintModel();
+    $this->Complaint->load(Model::NEW_INSTANCE);
+
+    $this->Complaint->title->set($this->data['title']);
+    $this->Complaint->body->value->set($this->data['body']);
+    
+    $this->Complaint->save();
+    
+    drupal_set_message('Bedankt voor het posten!');
+    drupal_goto($this->Complaint->getUri());
+  }
+}
