@@ -1,29 +1,32 @@
 <?php
 class Form {
-  public $formData;
-  public $form;
+  protected $data;
+  protected $fields;
   
-  public function __construct() {
-    $this->form = array();
+  protected $posted = FALSE;
+  protected $validated;
+  
+  public function __construct($post = array()) {
+    $this->fields = array();
+    
+    $this->addFields(array('form_class' => array(
+      '#type' => 'hidden',
+      '#value' => __CLASS__,
+    )));
+    
+    if (count($post)) {
+      $this->posted = TRUE;
+      $this->data = $post;
+    }
   }
   
-  /**
-   * Populate the form with data
-   * @param array $formData
-   * @return Form_Complaint 
-   */
-  public function populate($formData = array()) {
-    return $this;
-  }
-  
-/**
- * Return a drupal form array
- * @param array $fields
- * @return array 
- */
   public function addFields($fields = array()) {
-    $this->form = array_merge($this->form, $fields);
+    $this->fields = array_merge($this->fields, $fields);
     return $this;
+  }
+  
+  public function build() {
+    return $this->fields;
   }
   
   public function render($fields = array()) {
@@ -31,23 +34,62 @@ class Form {
       $fields = array($fields);
     }
     
-    foreach($this->form as $k=>$v) {
+    foreach($this->fields as $k=>$v) {
       if (count($fields) and !isset($fields[$k])) {
         continue;
       }
       
-      drupal_render($this->form[$k]);
+      drupal_render($this->fields[$k]);
     }
     
     return $this;
   }
 
-
-  public function validate(&$post) {
+  public function validate() {
+    if (!$this->data) {
+      throw new Exception('No post data given for form: '.__CLASS__);
+    }
     
+    $this->validated = TRUE;
+    
+    if (strlen($this->data['title']) > 2) {
+      $this->setError('title', 'Uw titel mag maximaal 2 karakters bevatten. Weinig he?');
+    }
+  }
+  
+  public function submit() {
+    $this->Complaint = new Complaint();
+    $this->Complaint->load(Model::NEW_INSTANCE);
+
+    $this->Complaint->title->set($this->data['title']);
+    $this->Complaint->body->value->set($this->data['body']);
+    
+    $this->Complaint->save();
+    
+    drupal_set_message('Bedankt voor het posten!');
+    drupal_goto($this->Complaint->getUri());
+  }
+  
+  public function isPosted() {
+    return $this->posted;
+  }
+  
+  public function isValid() {
+    if (!$this->validated) $this->validate();
+    return $this->validated;
   }
   
   public function __toString() {
-    drupal_render_children($this->form);
+    drupal_render_children($this->fields);
+  }
+  
+  /**
+   * OOP Alias of form_set_error
+   * @param string $field The field to set the error on
+   * @param string $msg The message to prompt the user with
+   */
+  public function setError($field, $msg) {
+    $validated = FALSE;
+    form_set_error($field, $msg);
   }
 }

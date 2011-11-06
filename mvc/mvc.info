@@ -4,4 +4,5 @@ core = 7.x
 files[] = mvc.controller.class
 files[] = mvc.model.class
 files[] = mvc.exception.class
+files[] = mvc.form.class
 dependencies[] = entity

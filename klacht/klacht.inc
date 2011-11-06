@@ -10,6 +10,7 @@ class Klacht extends Controller {
    * @var Complaint
    */
   public $Complaint;
+  public $theme = __CLASS__;
   
   public function __construct() {
     module_load_include('class', 'klacht','complaint');
@@ -51,8 +52,6 @@ class Klacht extends Controller {
       //display form
     //}
     
-    $form = array();
-
     $form['title'] = array(
       '#type' => 'textfield',
       '#title' => 'Titel',
@@ -68,34 +67,12 @@ class Klacht extends Controller {
       '#type' => 'submit',
       '#value' => 'Nieuwe klacht indienen',
     );
-
-    return $form;
-  }
-  public function NewActionValidate(&$post) {
-    if (strlen($post['title']) > 2) {
-      form_set_error('title', 'Uw titel mag maximaal 2 karakters bevatten. Weinig he?');
-    }
-  }
-  public function NewActionSubmit(&$post) {
-    $transaction = db_transaction();
-    try {
-      $this->message(print_r($post,true));
-      $this->Complaint->create();
-      $this->Complaint->title->set($post['title']);
-      $this->Complaint->body->set($post['body']);
-      if (!$this->Complaint->save()) {
-        $this->message('Klacht niet opgeslagen');
-        return;
-      }
-    } catch (Exception $e) {
-      $transaction->rollback();
-      watchdog_exception(Complaint::getWatchdogType(), $e);
-    }
     
-    $this->message('Bedankt voor het posten van uw klacht.');
-    # $this->IndexAction();
-    # or..
-    # $this->redirect('node/'.$this->id);
+    
+    $f = new Form();
+    $f->addFields($form);
+
+    return $f;
   }
   
   /**
@@ -105,6 +82,14 @@ class Klacht extends Controller {
   * @Cache: CONTROLLER_CACHE_PER_USER:86400
   */
   public function IndexAction() {
+    
+//    $this->Complaint->load(1);
+//    var_dump($this->Complaint->body->value());die;
+    
+//    $this->Complaint->body->value->set('Koekjes voor kip');
+//    $this->Complaint->save();
+    
+    
     global $user;
     return "Homepage voor klachten voor gebruiker: " . ( isset($user->name) ? $user->name : 'Anonieme gebruiker' );
   }

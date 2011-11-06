@@ -99,16 +99,12 @@ function mvc_cache_clear($cids = NULL) {
  *
  * @param array $form
  * @param array $form_state
- * @param array $formArray the form array to be rendered
- * @param string $controllerName the controller to use
- * @param string $methodName the form method
+ * @param Form $formClass
  * @return array
  */
-function mvc_get_forms($form, &$form_state, $formArray, $controllerName, $methodName) {
-  $form_state['controllerName'] = $controllerName;
-  $form_state['methodName'] = $methodName;
-
-  return $formArray;
+function mvc_get_forms($form, &$form_state, $formClass) {
+  $form_state['formClass'] = get_class($formClass);
+  return $formClass->build();
 }
 /**
  *
@@ -117,12 +113,9 @@ function mvc_get_forms($form, &$form_state, $formArray, $controllerName, $method
  * @return void the result of the validate function
  */
 function mvc_get_forms_validate($form, &$form_state) {
-  $controllerName = $form_state['controllerName'];
-  $methodName = $form_state['methodName'].'Validate';
-
-  if (isset($controllerName) and isset($methodName) and method_exists($controllerName, $methodName)) {
-    $controller = new $controllerName();
-    return $controller->$methodName($form_state['values']);
+  if (isset($form_state['formClass'])) {
+    $form = new $form_state['formClass']($form_state['values']);
+    $form->validate();
   }
 }
 /**
@@ -132,12 +125,9 @@ function mvc_get_forms_validate($form, &$form_state) {
  * @return void the result of the submit function
  */
 function mvc_get_forms_submit($form, &$form_state) {
-  $controllerName = $form_state['controllerName'];
-  $methodName = $form_state['methodName'].'Submit';
-  
-  if (isset($controllerName) and isset($methodName) and method_exists($controllerName, $methodName)) {
-    $controller = new $controllerName();
-    return $controller->$methodName($form_state['values']);
+  if (isset($form_state['formClass'])) {
+    $form = new $form_state['formClass']($form_state['values']);
+    $form->submit();
   }
 }
 
@@ -324,7 +314,7 @@ function mvc_return_page() {
     $form = $controller->$methodName();
     $form_id = "mvc_{$controllerName}_{$methodName}_form";
 
-    return drupal_get_form($form_id, $form, $controllerName, $methodName);
+    return drupal_get_form($form_id, $form);
   }
 
   if (isset($arguments[0]) and $arguments[0] === 'theme') {

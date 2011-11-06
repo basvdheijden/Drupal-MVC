@@ -24,7 +24,7 @@ class Model {
    * 
    * @var string Primary-Identifier
    */
-  public $primary;
+  protected $primary;
   
   /**
    * Entity node complaint id
@@ -50,13 +50,14 @@ class Model {
   }  
   
   public function load($id){
-    /* Get entity information */
-    if ($this->_entityId === self::NEW_INSTANCE) return $this->load($this->create());
-    
-    $this->_entityId = $id;
-    $this->_entity = entity_metadata_wrapper($this->_entityType,$this->_entityId);
-    
     if (!$id) throw new InvalidArgumentException('No Id is given for entity');
+    $this->_entityId = $id;
+    
+    if ($this->_entityId === self::NEW_INSTANCE) {
+      return $this->load($this->create());
+    }
+      
+    $this->_entity = entity_metadata_wrapper($this->_entityType, $this->_entityId);
   }
   
   /**
@@ -80,7 +81,15 @@ class Model {
       $this->_entityInfo = entity_get_info($this->_entityType);
       $this->primary = $this->_entityInfo['entity keys']['id'];
     }
+    
     return $this->_entityInfo;
+  }
+  
+  public function getUri() {
+    $object = new StdClass();
+    $object->{$this->primary} = $this->_entityId;
+    $build = call_user_func($this->_entityInfo['uri callback'], $object);
+    return $build['path'];
   }
 
   /**
@@ -100,18 +109,10 @@ class Model {
    * @return Project_Entity_Base::getEntity()
    */
   public function create() {
-    try{
-    $node = call_user_func($this->_entityInfo['creation callback'], array($this->_entityInfo['entity keys']['bundle'] => $this->_bundle));
-    node_object_prepare($node);
-    $node->body ='kip';
-    node_save($node);
-    $this->load($node->nid);
-    var_dump($this->_entity);
-    print_r($this->getEntity());
-    die;
-    }catch(Exception $e){
-      echo $e;die;
-    }
+    $object = call_user_func($this->_entityInfo['creation callback'], array($this->_entityInfo['entity keys']['bundle'] => $this->_bundle));
+    call_user_func($this->_entityInfo['save callback'], $object);
+    
+    return $object->{$this->primary};
   }
  
   /**
