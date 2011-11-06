@@ -5,4 +5,5 @@ files[] = mvc.controller.class
 files[] = mvc.model.class
 files[] = mvc.exception.class
 files[] = mvc.form.class
+files[] = mvc.block.class
 dependencies[] = entity

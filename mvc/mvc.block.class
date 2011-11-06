@@ -1,18 +1,30 @@
 <?php
-class Block {
-  public function __construct() {
-    
-  }
+abstract class Block {
+  protected $cache = DRUPAL_CACHE_GLOBAL;
   
-  public function render() {
-    
-  }
+  protected $region = null;
+  protected $status = null;
+  protected $visibility = null;
+  protected $pages = null;
+  
+  abstract protected $title;
+  abstract protected $info;
+  
+  abstract public function render();
+  
+  public function configure();
   
   public function info() {
-    
+    return array(
+      'info' => $this->title,
+      'cache' => $this->cache,
+      'status' => $this->status,
+      'region' => $this->region,
+      'visibility' => $this->visibility,
+    );
   }
+}
+
+class CompaintBlock extends Block {
   
-  public function configure() {
-    
-  }
 }

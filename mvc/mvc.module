@@ -477,3 +477,26 @@ function mvc_theme($existing, $type, $theme, $path) {
   
   return $theme;
 }
+
+/**
+ * Implementation of hook_block_info 
+ */
+function mvc_block_info() {
+  $drupalBlocks = array();
+  foreach(module_implements('mvc_blocks') as $module) {
+    $blocks = module_invoke($module, 'mvc_blocks');
+    foreach($blocks as $blockName) {
+      $block = new $blockName();
+      $drupalBlocks[$blockName] = $blockName->info();
+    }
+  }
+  var_dump($drupalBlocks);die;
+}
+
+/**
+ * Implementation of hook_block_view
+ * @param string $delta
+ */
+function mvc_block_view($delta = '') {
+  
+}
