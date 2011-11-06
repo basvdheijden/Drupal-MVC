@@ -4,5 +4,5 @@ function klacht_mvc_controllers() {
 }
 
 function klacht_mvc_blocks() {
-  return array('ComplaintBlock');
+  return array('ComplaintBlock', 'AnotherComplaintBlock');
 }

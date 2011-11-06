@@ -1,12 +1,53 @@
 <?php
-
-die('beag');
-/*
-class CompaintBlock extends Block {
-  protected $info = 'Bla Backend';
-  protected $title = 'Bla Frontend';
+class ComplaintBlock extends Block {
+  protected $visibility = BLOCK_VISIBILITY_NOTLISTED;
+  protected $info = 'ComplaintBlock Backend Title';
+  public $title = 'ComplaintBlock Frontend Title';
 
   public function render() {
-    return 'Hier ben ik';
+    return 'Hier ben ik. Dit is mijn content. Joehoee!';
   }
-}*/
+}
+
+class AnotherComplaintBlock extends Block {
+  protected $visibility = BLOCK_VISIBILITY_PHP;
+  protected $info = 'AnotherComplaintBlock Backend Title';
+  public $title = 'AnotherComplaintBlock Frontend Title';
+
+  public function render() {
+    $complaint = new ComplaintModel();
+    $complaint->load(arg(1));
+    $msg = 'Ik ben nog een blokje voor ingelogde users.';
+    $msg .= '<br/> Dit is complaint: '.$complaint->title->value();
+    
+    return $msg;
+  }
+  
+  /**
+   * Only show the block if:
+   *  - the current node type is 'complaint',
+   *  - the user is logged in
+   */
+  public static function access() {
+    if (arg(0) !== 'node' or !is_numeric(arg(1))) {
+      return FALSE;
+    }
+    
+    global $user;
+    if (!$user->uid) {
+      return FALSE;
+    }
+    
+    try {
+      $complaint = new ComplaintModel();
+      $complaint->load(arg(1));
+      $title = $complaint->title->value();
+      $success = TRUE;
+    }
+    catch(EntityMetadataWrapperException $e) {
+      $success = FALSE;
+    }
+    
+    return $success;
+  }
+}

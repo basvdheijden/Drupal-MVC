@@ -4,14 +4,13 @@
   
   protected $region = null;
   protected $status = null;
-  protected $visibility = null;
-  protected $pages = null;
   
-  protected $title;
+  protected $visibility = BLOCK_VISIBILITY_NOTLISTED;
+  
   protected $info;
+  public $title;
 
   public function render() {
-    
   }
   
   public function configure() {
@@ -19,12 +18,25 @@
   }
   
   public function info() {
-    return array(
-      'info' => $this->title,
+    $block = array(
+      'info' => $this->info,
       'cache' => $this->cache,
       'status' => $this->status,
       'region' => $this->region,
       'visibility' => $this->visibility,
     );
+    
+    //var_dump('a');die;
+    
+    if (module_exists('php') and $this->visibility === BLOCK_VISIBILITY_PHP) {
+      $class = get_class($this);
+      $block['pages'] = "<?php return {$class}::access(); ?>";
+    }
+    
+    return $block;
+  }
+  
+  public static function access() {
+    return TRUE;
   }
 }
