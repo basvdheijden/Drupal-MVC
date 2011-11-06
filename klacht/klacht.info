@@ -1,6 +1,7 @@
 name = Klacht Test
 description = klacht test
 core = 7.x
+files[] = complaint.blocks.class
 files[] = complaint.class
 files[] = complaint.form.class
 files[] = complaint.model.class

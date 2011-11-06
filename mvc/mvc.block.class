@@ -1,5 +1,5 @@
 <?php
-abstract class Block {
+ class Block {
   protected $cache = DRUPAL_CACHE_GLOBAL;
   
   protected $region = null;
@@ -7,12 +7,16 @@ abstract class Block {
   protected $visibility = null;
   protected $pages = null;
   
-  abstract protected $title;
-  abstract protected $info;
+  protected $title;
+  protected $info;
+
+  public function render() {
+    
+  }
   
-  abstract public function render();
-  
-  public function configure();
+  public function configure() {
+    
+  }
   
   public function info() {
     return array(
@@ -23,8 +27,4 @@ abstract class Block {
       'visibility' => $this->visibility,
     );
   }
-}
-
-class CompaintBlock extends Block {
-  
 }

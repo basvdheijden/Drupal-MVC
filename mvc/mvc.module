@@ -482,15 +482,17 @@ function mvc_theme($existing, $type, $theme, $path) {
  * Implementation of hook_block_info 
  */
 function mvc_block_info() {
-  $drupalBlocks = array();
+  //$drupalBlocks = array();
   foreach(module_implements('mvc_blocks') as $module) {
     $blocks = module_invoke($module, 'mvc_blocks');
     foreach($blocks as $blockName) {
-      $block = new $blockName();
-      $drupalBlocks[$blockName] = $blockName->info();
+      //var_dump(class_exists('ComplaintBlock'));die;
+      //$block = new $blockName();
+      //$block = new Block();
+      //$drupalBlocks[$blockName] = $blockName->info();
     }
   }
-  var_dump($drupalBlocks);die;
+  //var_dump($drupalBlocks);die;
 }
 
 /**
@@ -499,4 +501,8 @@ function mvc_block_info() {
  */
 function mvc_block_view($delta = '') {
   
+}
+
+function mvc_init() {
+  mvc_block_info();
 }

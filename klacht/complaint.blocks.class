@@ -1,0 +1,12 @@
+<?php
+
+die('beag');
+/*
+class CompaintBlock extends Block {
+  protected $info = 'Bla Backend';
+  protected $title = 'Bla Frontend';
+
+  public function render() {
+    return 'Hier ben ik';
+  }
+}*/
