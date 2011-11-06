@@ -1,5 +1,5 @@
 <?php
-class Form_Complaint{
+class Form_Complaint {
   
   public $formData;
   public $form;

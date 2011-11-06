@@ -1,5 +1,5 @@
 <?php
-class Complaint extends Project_Entity_Base{
+class Complaint extends Model {
   
   /**
    * Entity Bundle type

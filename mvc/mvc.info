@@ -3,4 +3,5 @@ description = Model-View-Controller
 core = 7.x
 files[] = controller.inc
 files[] = mvc.controller.class
+files[] = mvc.model.class
 dependencies[] = entity
