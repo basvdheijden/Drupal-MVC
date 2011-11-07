@@ -1,5 +1,4 @@
 <?php
-
 class ComplaintModel extends Model {
 
   /**
@@ -18,8 +17,9 @@ class ComplaintModel extends Model {
     $complaints = $query->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'page')
         ->execute();
+    
     if ($complaints) {
-      return new Collection($complaints['node'], 'ComplaintModel');
+      return new Collection(array_values($complaints['node']), 'ComplaintModel');
     }
   }
 

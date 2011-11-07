@@ -85,7 +85,6 @@ class Complaint extends Controller {
     $view = new View();
     $model = $this->Complaint;
     $view->content = $model->getAll();
-    $build = array('view' => $view);
-    return $build;
+    return $view;
   }
 }
