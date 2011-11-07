@@ -9,7 +9,6 @@ class Complaint extends Controller {
   public $theme = __CLASS__;
   
   public function init() {
-    module_load_include('class', 'klacht','complaint');
     $this->Complaint = new ComplaintModel();
   }
   
