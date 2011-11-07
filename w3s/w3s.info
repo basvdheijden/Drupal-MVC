@@ -1,6 +1,0 @@
-name = W3S Base module
-description = The Base module for all W3S Drupal Projects
-package = W3S
-core = 7.x
-files[] = w3s.module
-files[] = w3s.install
