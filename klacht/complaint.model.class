@@ -1,9 +1,26 @@
 <?php
+
 class ComplaintModel extends Model {
-  
+
   /**
    * Entity Bundle type
    * @var string 
    */
   protected $_bundle = 'page';
+
+  /**
+   *
+   * @return type 
+   */
+  public function getAll() {
+    $result = array();
+    $query = new EntityFieldQuery;
+    $complaints = $query->entityCondition('entity_type', 'node')
+        ->propertyCondition('type', 'page')
+        ->execute();
+    if ($complaints) {
+      return new Collection($complaints['node'],'ComplaintModel');
+    }
+  }
+
 }

@@ -45,6 +45,9 @@ class Model {
   protected $_entityInfo;
   
   public function __construct($id = null) {
+    if($id instanceof stdClass AND isset($id->nid)){
+      $id = $id->nid;
+    }
     $this->getInfo();
     $this->_entityId = $id;
   }  

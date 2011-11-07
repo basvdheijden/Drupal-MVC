@@ -1,0 +1,57 @@
+<?php
+
+class View extends StdClass{
+
+  protected $_template;
+  protected $_properties = array();
+  public $content;
+
+  public function __call($key,$params){
+    if(!isset($this->{$key})) throw new MVCException("Call to undefined method ".get_class($this)."::".$key."()");
+    $subject = $this->{$key};
+    call_user_func_array($subject,$params);
+  }
+    
+  public function __construct($template = null) {
+    if ($template !== null) {
+      $this->setTemplate($template);
+    }
+  }
+  
+  public function setTemplate($template) {
+    if (!file_exists($template)) {
+      throw new MVCException('The specified template does not exist.');
+    }
+    $this->_template = $template;
+  }
+
+  public function getTemplate() {
+    return $this->_template;
+  }
+
+  public function render($returnString = false) {
+    if ($this->_template !== '') {
+      ob_start();
+      include($this->_template);
+      $this->content = ob_get_clean();
+      
+      if($returnString){
+        return $this->content;
+      }
+      
+      return array('view'=>$this->content);
+    }
+    else{
+       return array('view'=>$this->toArray());
+    }
+  }
+  
+  public function __toString(){
+     return $this->render();
+  }
+
+  public function toArray(){
+    return (array)$this;
+  }
+  
+}

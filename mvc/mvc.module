@@ -350,6 +350,7 @@ function mvc_return_page() {
 
   $build = call_user_func_array(array($controller, $methodName), $arguments);
 
+  
   if (isset($currentFormat)) {
     print $controller->format($currentFormat, $build);
     exit;
@@ -366,7 +367,6 @@ function mvc_return_page() {
   if ($cacheId) {
     mvc_cache_set($cacheId, $build);
   }
-  
   return $build;
 }
 
