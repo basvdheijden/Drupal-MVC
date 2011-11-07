@@ -82,12 +82,10 @@ class Complaint extends Controller {
   * @Cache: CONTROLLER_CACHE_GLOBAL:10
   */  
   public function OverviewAction() {
-    
     $view = new View();
     $model = $this->Complaint;
     $view->content = $model->getAll();
-    $build = array('view'=>$view);
+    $build = array('view' => $view);
     return $build;
   }
-
 }

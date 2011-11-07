@@ -230,7 +230,7 @@ function mvc_get_method_attributes($controllerName, $methodName) {
   
   $items = array();
   foreach($methodAttributes[1] as $k=>$v) {
-    $items[$v] = $itemValues[$k];
+    $items[$v] = trim($itemValues[$k]);
   }
   // Get theme attribute
   $items['theme'] = (bool) preg_match('/@Themed/', $docComment);
@@ -349,13 +349,12 @@ function mvc_return_page() {
   }
 
   $build = call_user_func_array(array($controller, $methodName), $arguments);
-
   
   if (isset($currentFormat)) {
     print $controller->format($currentFormat, $build);
     exit;
   }
-
+  
   if ($theme) {
     // Render a different theme
     if (is_array($build) and isset($build['theme'])) {
@@ -434,7 +433,7 @@ function mvc_menu() {
  */
 function mvc_theme($existing, $type, $theme, $path) {
   $theme = array();
-  foreach(module_implements('mvc') as $module) {
+  foreach(module_implements('mvc_controllers') as $module) {
     $path = drupal_get_path('module', $module).'/templates';
     
     $controllers = module_invoke($module, 'mvc_controllers');

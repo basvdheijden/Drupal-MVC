@@ -19,7 +19,7 @@ class ComplaintModel extends Model {
         ->propertyCondition('type', 'page')
         ->execute();
     if ($complaints) {
-      return new Collection($complaints['node'],'ComplaintModel');
+      return new Collection($complaints['node'], 'ComplaintModel');
     }
   }
 
