@@ -1,4 +1,9 @@
 <?php
+function klacht_mvc(){
+  
+}
+
+
 function klacht_mvc_controllers() {
   return array('Complaint');
 }

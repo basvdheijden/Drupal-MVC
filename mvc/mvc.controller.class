@@ -10,8 +10,14 @@ class Controller {
   
   public function __construct() {
     $this->buildPrefix();
+    
+    $this->init();
   }
 
+  public function init() {
+    
+  }
+  
   /**
    * Builds the prefix (defaults to the name of the controller
    */

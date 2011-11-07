@@ -1,9 +1,5 @@
 <?php
 class Complaint extends Controller {
-  /*
-   * Override prefix
-   */
-  public $prefix = 'klacht';
   
   /**
    *
@@ -12,7 +8,7 @@ class Complaint extends Controller {
   public $Complaint;
   public $theme = __CLASS__;
   
-  public function __construct() {
+  public function init() {
     module_load_include('class', 'klacht','complaint');
     $this->Complaint = new ComplaintModel();
   }
@@ -44,16 +40,18 @@ class Complaint extends Controller {
    * @Access arguments: access content
    * @Title: Add a new klacht
    * @Form
+   * 
    */
   public function NewAction() {
-    return new KlachtForm();
+    $form =  new KlachtForm();
+    return $form;
   }
   
   /**
   * @Type: MENU_NORMAL_ITEM
   * @Access arguments: access content
   * @Title: Homepage voor klachten
-  * @Cache: CONTROLLER_CACHE_PER_USER:86400
+  * 
   */
   public function IndexAction() {
     global $user;

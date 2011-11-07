@@ -165,6 +165,8 @@ function mvc_menu_get_property(&$item, $propertyName, $value) {
   
   switch($propertyName) {
     case 'type':
+      $value = trim($value);
+      if(!defined($value)) throw new MVCException ('Type '.$value.' constant not defined');
       $value = constant($value);
       break;
     case 'access arguments':
@@ -230,11 +232,9 @@ function mvc_get_method_attributes($controllerName, $methodName) {
   foreach($methodAttributes[1] as $k=>$v) {
     $items[$v] = $itemValues[$k];
   }
-
   // Get theme attribute
   $items['theme'] = (bool) preg_match('/@Themed/', $docComment);
-  $items['form'] = (bool) preg_match('/@Form\n/', $docComment);
-  
+  $items['form'] = (bool) preg_match('/@Form/', $docComment);
   return $items;
 }
 
@@ -262,12 +262,11 @@ function mvc_menu_get_items($controllerName) {
     foreach($attributes as $k=>$v) {
       mvc_menu_get_property($item, $k, $v);
     }
-    
     $item['page callback'] = 'mvc_return_page';
     $item['page arguments'] = array($controllerName, $method.'Action');
 
     if ($attributes['form']) {
-      $item['page arguments'][] = 'form';
+       $item['page arguments'][] = 'form';
     }
     
     if ($attributes['theme']) {
@@ -316,9 +315,8 @@ function mvc_return_page() {
     $form_id = "mvc_{$controllerName}_{$methodName}_form";
     $method = str_replace('Action', '', $methodName);
     $theme_id = "{$controllerName}_{$method}";
-
+      
     $form = drupal_get_form($form_id, $form);
-    
     return theme($theme_id, array('form' => $form));
   }
 
@@ -408,7 +406,8 @@ function mvc_flush_caches() {
 function mvc_menu() {
   $items = array();
   try{
-    foreach(module_invoke_all('mvc') as $controller) {
+    foreach(module_invoke_all('mvc_controllers') as $controller) {
+      
       $items = array_merge($items, mvc_menu_get_items($controller));
     }
 
@@ -435,10 +434,10 @@ function mvc_menu() {
  */
 function mvc_theme($existing, $type, $theme, $path) {
   $theme = array();
-  foreach(module_implements('mvc_controllers') as $module) {
+  foreach(module_implements('mvc') as $module) {
     $path = drupal_get_path('module', $module).'/templates';
     
-    $controllers = module_invoke($module, 'mvc');
+    $controllers = module_invoke($module, 'mvc_controllers');
     foreach($controllers as $controller) {
       foreach(mvc_menu_get_actions($controller, $showPrefix = FALSE) as $method) {
         $attributes = mvc_get_method_attributes($controller, $method.'Action');
