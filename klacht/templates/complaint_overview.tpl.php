@@ -1,9 +1,6 @@
-Ik ben gethemed.. yay!!!!
-<?php echo count($view['view']->content)?>
+<h1>Overview of complaints</h1>
 
-<?php var_dump($view['view']->content);?>
-<?php foreach ($view['view']->content as $k => $row ): ?>
+<?php foreach ($view->content as $row ): ?>
   <br />
-  <strong><?php var_dump($row)?></strong>
-<?  endforeach;?>
-  
+  <strong><?php print l($row->title->value(), $row->getUri()); ?></strong>
+<?php endforeach; ?>
