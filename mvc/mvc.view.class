@@ -1,9 +1,15 @@
 <?php
-
 class View extends StdClass{
-
+  /**
+   * Current template file
+   * @var string
+   */
   protected $_template;
-  protected $_properties = array();
+  
+  /**
+   * The contents of the view object
+   * @var object
+   */
   public $content;
 
   public function __call($key,$params){
@@ -18,6 +24,11 @@ class View extends StdClass{
     }
   }
   
+  /**
+   * Set the template
+   * @param string $template
+   * @throws MVCException 
+   */
   public function setTemplate($template) {
     if (!file_exists($template)) {
       throw new MVCException('The specified template does not exist.');
@@ -25,10 +36,19 @@ class View extends StdClass{
     $this->_template = $template;
   }
 
+  /**
+   * Returns the current template
+   * @return string 
+   */
   public function getTemplate() {
     return $this->_template;
   }
 
+  /**
+   * Return the rendered view
+   * @param boolean $returnString
+   * @return array content
+   */
   public function render($returnString = false) {
     if ($this->_template !== '') {
       ob_start();
@@ -47,11 +67,10 @@ class View extends StdClass{
   }
   
   public function __toString(){
-     return $this->render();
+    return $this->render();
   }
 
   public function toArray(){
     return (array)$this;
   }
-  
 }
