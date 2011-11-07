@@ -149,6 +149,6 @@ class Model {
   }
   
   public static function getWatchdogType(){
-    return 'Project_Entity_Save';
+    return 'mvc-model';
   }
 }

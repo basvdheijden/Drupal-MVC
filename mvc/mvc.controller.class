@@ -2,13 +2,6 @@
 class Controller {
   
   /**
-   * Primary identity key for this entity type
-   * i.e. 'nid' for node
-   * @var string Primary-Identifier
-   */
-  public $primary;
-  
-  /**
    * Routing prefix (defaults to the name of controller)
    * @var string 
    */
