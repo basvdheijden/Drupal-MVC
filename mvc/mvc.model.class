@@ -49,7 +49,11 @@ class Model {
       $id = $id->nid;
     }
     $this->getInfo();
+
     $this->_entityId = $id;
+    if ($this->_entityId) {
+      $this->load($this->_entityId);
+    }
   }  
   
   public function load($id){
@@ -61,6 +65,8 @@ class Model {
     }
       
     $this->_entity = entity_metadata_wrapper($this->_entityType, $this->_entityId);
+    
+    return $this;
   }
   
   /**
@@ -93,18 +99,6 @@ class Model {
     $object->{$this->primary} = $this->_entityId;
     $build = call_user_func($this->_entityInfo['uri callback'], $object);
     return $build['path'];
-  }
-
-  /**
-   * @param bool $renew
-   * @return EntityDrupalWrapper
-   */
-  public function getEntity($renew = false){
-  
-    if(null === $this->_entity OR ($renew === true)){
-      $this->_entity = entity_metadata_wrapper($this->_entityType,$this->_entityId);
-    }
-    return $this->_entity;
   }
   
   /**
