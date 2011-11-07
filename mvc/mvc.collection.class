@@ -1,7 +1,5 @@
 <?php
-
 class Collection implements SeekableIterator, ArrayAccess, Countable {
-
   /**
    * Default entity class name
    * @var string
@@ -35,7 +33,7 @@ class Collection implements SeekableIterator, ArrayAccess, Countable {
    * @param  string $entityClass
    * @return void
    */
-  public function __construct($data,$entityClass = null) {
+  public function __construct($data, $entityClass = null) {
     if ($entityClass !== null) {
       $this->_entityClass = $entityClass;
     }
@@ -96,7 +94,7 @@ class Collection implements SeekableIterator, ArrayAccess, Countable {
   }
 
   /**
-   * @param  integer                         $position
+   * @param  integer $position
    * @return Collection
    * @throws InvalidArgumentException
    */
@@ -144,34 +142,4 @@ class Collection implements SeekableIterator, ArrayAccess, Countable {
   public function offsetUnset($offset) {
     
   }
-
-  /**
-   * @param  integer              $position
-   * @param  boolean              $seek
-   * @return Model
-   */
-  public function getEntity($position, $seek = false) {
-    $key = $this->key();
-    $this->seek($position);
-    $entity = $this->current();
-
-    if ($seek === false) {
-      $this->seek($key);
-    }
-    return $entity;
-  }
-
-  /**
-   * @return array
-   */
-  public function toArray() {
-    $returnData = array();
-    $this->rewind();
-    while ($entity = $this->current()) {
-      $returnData[] = (array)$entity;
-      $this->next();
-    }
-    return $returnData;
-  }
-
 }
