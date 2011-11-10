@@ -1,10 +1,37 @@
 <?php
-class Form {
-  protected $data;
-  protected $fields = array();
+class Form implements SeekableIterator, ArrayAccess, Countable {
+  /*
+   * @var array<FormField>
+   */
+  protected $_fields = array();
+  /*
+   * @var array
+   */
+  public $fields = array();
   
+  /*
+   * @var boolean
+   */
   protected $posted = FALSE;
-  protected $validated;
+  
+  /*
+   * @var boolean
+   */
+  public $validated;
+  
+  /**
+   * @var integer
+   */
+  protected $_pointer = 0;
+  /**
+   * @var integer
+   */
+  protected $_count;
+  /**
+   * the $_POST data
+   * @var array
+   */
+  public $data = array();  
   
   public function __construct($post = array()) {
     $this->addFields(array('form_class' => array(
@@ -14,17 +41,45 @@ class Form {
     
     if (count($post)) {
       $this->posted = TRUE;
-      $this->data = $post;
+      foreach($post as $name=>$field) {
+        $this->data[$name] = new FormField($name, array('value' => $field));
+      }
     }
   }
   
+  /**
+   * Add a single FormField to the current form
+   * @param FormField $field
+   */
+  public function addField(FormField $field) {
+    $name = $field->name;
+    $this->_fields[$name] = $field;
+    $this->fields[$name] = $field->toArray();
+  }
+  
+  /**
+   * Add an array of fields
+   * @param array $fields
+   * @return Form $this
+   */
   public function addFields($fields = array()) {
-    $this->fields = array_merge($this->fields, $fields);
+    foreach($fields as $name=>$fieldInfo) {
+      if ($fieldInfo instanceof FormField) {
+        $this->addField($fieldInfo);
+      }
+      elseif (is_array($fieldInfo)) {
+        $this->addField(new FormField($name, $fieldInfo));
+      }
+    }
     return $this;
   }
   
   public function build() {
-    return $this->fields;
+    $fields = array();
+    foreach($this->_fields as $name=>$field) {
+      $fields[$name] = $field->toArray();
+    }
+    return $fields;
   }
   
   public function isPosted() {
@@ -38,13 +93,104 @@ class Form {
 
   public function validate() {  }
   public function submit() {  }
+
+  /** Interface Implementations **/
+  
   /**
-   * OOP Alias of form_set_error
-   * @param string $field The field to set the error on
-   * @param string $msg The message to prompt the user with
+   * @return FormField
    */
-  public function setError($field, $msg) {
-    $validated = FALSE;
-    form_set_error($field, $msg);
+  public function rewind() {
+    $this->_pointer = 0;
+    return $this;
   }
+
+  /**
+   * @return FormField
+   */
+  public function current() {
+    if ($this->valid() === false) {
+      return;
+    }
+    
+    return $this->_fields[$this->_pointer];
+  }
+
+  /**
+   * @return integer
+   */
+  public function key() {
+    return $this->_pointer;
+  }
+
+  /**
+   * @return FormField
+   */
+  public function next() {
+    ++$this->_pointer;
+
+    return $this;
+  }
+
+  /**
+   * @return boolean
+   */
+  public function valid() {
+    return $this->_pointer < $this->_count;
+  }
+
+  /**
+   * @return integer
+   */
+  public function count() {
+    return $this->_count;
+  }
+
+  /**
+   * @param  integer $position
+   * @return Collection
+   * @throws InvalidArgumentException
+   */
+  public function seek($position) {
+    $position = (int) $position;
+    if ($position < 0 || $position > $this->_count) {
+      throw new InvalidArgumentException(sprintf('Illegal seek index "%s" provided', $position));
+    }
+    $this->_pointer = $position;
+
+    return $this;
+  }
+
+  /**
+   * @param  integer $offset
+   * @return boolean
+   */
+  public function offsetExists($offset) {
+    return array_key_exists((int) $offset, $this->_fields);
+  }
+
+  /**
+   * @param  integer              $offset
+   * @return Model
+   */
+  public function offsetGet($offset) {
+    $this->_pointer = (int) $offset;
+    return $this->current();
+  }
+
+  /**
+   * @param  integer $offset
+   * @param  mixed   $value
+   * @return void
+   */
+  public function offsetSet($offset, $value) {
+
+  }
+
+  /**
+   * @param  integer $offset
+   * @return void
+   */
+  public function offsetUnset($offset) {
+
+  }  
 }

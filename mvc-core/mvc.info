@@ -5,6 +5,7 @@ files[] = mvc.controller.class
 files[] = mvc.model.class
 files[] = mvc.exception.class
 files[] = mvc.form.class
+files[] = mvc.form.field.class
 files[] = mvc.block.class
 files[] = mvc.view.class
 files[] = mvc.collection.class

@@ -125,6 +125,7 @@ function mvc_get_forms_validate($form, &$form_state) {
  * @return void the result of the submit function
  */
 function mvc_get_forms_submit($form, &$form_state) {
+  form_state_values_clean($form_state);
   if (isset($form_state['formClass'])) {
     $form = new $form_state['formClass']($form_state['values']);
     $form->submit();

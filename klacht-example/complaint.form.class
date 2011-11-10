@@ -25,13 +25,14 @@ class KlachtForm extends Form {
   
   public function validate() {
     if (!$this->data) {
-      throw new Exception('No post data given for form: '.__CLASS__);
+      $this->data['body']->setError('No post data given for form: '.__CLASS__);
     }
     
-    $this->validated = TRUE;
-    
-    if (strlen($this->data['title']) > 2) {
-      $this->setError('title', 'Uw titel mag maximaal 2 karakters bevatten. Weinig he?');
+    if (strlen((string) $this->data['title']) > 2) {
+      $this->data['title']->setError('Uw titel mag maximaal 2 karakters bevatten. Weinig he?');
+    }
+    else {
+      $this->validated = TRUE;
     }
   }
   
@@ -39,8 +40,8 @@ class KlachtForm extends Form {
     $this->Complaint = new ComplaintModel();
     $this->Complaint->load(Model::NEW_INSTANCE);
 
-    $this->Complaint->title->set($this->data['title']);
-    $this->Complaint->body->value->set($this->data['body']);
+    $this->Complaint->title->set((string) $this->data['title']);
+    $this->Complaint->body->value->set((string) $this->data['body']);
     
     $this->Complaint->save();
     

@@ -1,0 +1,54 @@
+<?php
+class FormField {
+  /*
+   * @var string
+   */
+  public $value;
+  /*
+   * @var string
+   */
+  public $name;
+  
+  /*
+   * @var array
+   */
+  protected $_fieldInfo;
+  
+  
+  /**
+   * @param string $name
+   * @param array $fieldInfo 
+   */
+  public function __construct($name, array $fieldInfo) {
+    $this->name = $name;
+    $this->_fieldInfo = $fieldInfo;
+    if (isset($this->_fieldInfo['value'])) {
+      $this->value = $this->_fieldInfo['value'];
+    }
+  }
+  
+  /**
+   * @return array
+   */
+  public function toArray() {
+    return $this->_fieldInfo;
+  }
+  
+  /**
+   * OOP Alias of form_set_error
+   * @param string $msg The message to prompt the user with
+   */
+  public function setError($msg) {
+    form_set_error($this->name, $msg);
+  }
+  
+  /**
+   * @return string value
+   */
+  public function __toString() {
+    if (isset($this->value)) {
+      return $this->value;
+    }
+    return '';
+  }
+}
