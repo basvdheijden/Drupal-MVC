@@ -481,6 +481,7 @@ function mvc_theme($existing, $type, $theme, $path) {
  * Implementation of hook_block_info 
  */
 function mvc_block_info() {
+  $drupalBlocks = array();
   foreach(module_implements('mvc_blocks') as $module) {
     $blocks = module_invoke($module, 'mvc_blocks');
     foreach($blocks as $blockName) {
